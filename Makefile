@@ -6,7 +6,13 @@
 TESTDIRS = \
 	   cmurf \
 	   fedora-fwupd-lenovo \
-	   windows-ubuntu-manjaro-fedora
+	   mtd \
+	   nvme-and-sata-0 \
+	   nvme-and-sata-1 \
+	   pmem-btt \
+	   virtio \
+	   windows-ubuntu-manjaro-fedora \
+	   xps13-9350
 
 test:
 	@for x in $(TESTDIRS) ; do \
