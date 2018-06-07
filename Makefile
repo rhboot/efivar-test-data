@@ -10,6 +10,7 @@ TESTDIRS = \
 	   nvme-and-sata-0 \
 	   nvme-and-sata-1 \
 	   pmem-btt \
+	   sata-and-4k-sas \
 	   virtio \
 	   vm-baytrail-x64-nosb \
 	   windows-ubuntu-manjaro-fedora \
