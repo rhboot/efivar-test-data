@@ -12,6 +12,7 @@ TESTDIRS = \
 	   pmem-btt \
 	   sata-and-4k-sas \
 	   virtio \
+	   virtio-and-ide-and-scsi \
 	   vm-baytrail-x64-nosb \
 	   windows-ubuntu-manjaro-fedora \
 	   xps13-9350 \
