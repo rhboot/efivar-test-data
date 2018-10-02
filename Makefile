@@ -11,6 +11,7 @@ TESTDIRS = \
 	   nvme-and-sata-1 \
 	   pmem-btt \
 	   sata-and-4k-sas \
+	   sata-on-sas-expander \
 	   virtio \
 	   virtio-and-ide-and-scsi \
 	   vm-baytrail-x64-nosb \
