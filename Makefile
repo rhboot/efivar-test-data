@@ -12,7 +12,8 @@ TESTDIRS = \
 	   pmem-btt \
 	   virtio \
 	   windows-ubuntu-manjaro-fedora \
-	   xps13-9350
+	   xps13-9350 \
+	   xps13-9380
 
 test:
 	@for x in $(TESTDIRS) ; do \
