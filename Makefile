@@ -4,6 +4,7 @@
 #
 
 TESTDIRS = \
+	   fedora-fwupd-lenovo \
 	   windows-ubuntu-manjaro-fedora
 
 test:
