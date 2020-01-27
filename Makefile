@@ -3,7 +3,8 @@
 # Peter Jones, 2020-02-24 14:42
 #
 
-TESTDIRS =
+TESTDIRS = \
+	   windows-ubuntu-manjaro-fedora
 
 test:
 	@for x in $(TESTDIRS) ; do \
