@@ -4,6 +4,7 @@
 #
 
 TESTDIRS = \
+	   cmurf \
 	   fedora-fwupd-lenovo \
 	   windows-ubuntu-manjaro-fedora
 
