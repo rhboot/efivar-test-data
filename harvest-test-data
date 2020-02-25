@@ -5,21 +5,36 @@ set -u
 
 cleanup() {
     if [[ -v includes ]] && [[ -n "${includes}" ]] ; then
-        rm "${includes}"
+	rm "${includes}"
     fi
+    if [[ -v SUDO_UID ]] && [[ -v SUDO_GID ]] && \
+       [[ -v target ]] && [[ -d "${target}" ]]
+    then
+        chown -R "${SUDO_UID}:${SUDO_GID}" "${target}/"
+	find "${target}/" -type d -exec chmod 0755 {} \;
+	find "${target}/" -type f -exec chmod 0644 {} \;
+    fi
+    trap - INT TERM EXIT ERR
+    exit 0
 }
+
 trap cleanup INT TERM EXIT ERR
 
 usage_helper() {
-    echo 'backup-sysfs.sh <target_sys_dir>'
+    echo 'harvest-test-data <target_dir>'
+}
+
+show_help() {
+    echo 'example: sudo harvest-test-data xps13-9380'
 }
 
 usage() {
     retval=$1 && shift
     if [[ ${retval} -gt 0 ]]; then
-        usage_helper 1>&2
+	usage_helper 1>&2
     else
-        usage_helper
+	usage_helper
+	show_help
     fi
     exit ${retval}
 }
@@ -29,14 +44,27 @@ if [[ $# -ne 1 ]] ; then
 else
     case " ${1} " in
     " -h "|" --help "|" -? "|" --usage ")
-        usage 0
-        ;;
+	usage 0
+	;;
     esac
 fi
 
 target="${1}" && shift
 if [[ $# -gt 0 ]] ; then
     usage 1
+fi
+
+real_target="$(realpath "${target}")"
+cat /proc/mounts | while read dev mountpoint type options extras ; do
+    if [[ "${mountpoint}" -ef "${real_target}" ]] ; then
+	echo "Invalid target directory \"${target}\"." 1>&2
+	exit 1
+    fi
+done
+
+if ! [[ -v EUID ]] || [[ $EUID -ne 0 ]] ; then
+    echo "This utility must be run as root" >>/dev/stderr
+    exit 1
 fi
 
 #(
@@ -46,7 +74,7 @@ fi
 #) 2>/dev/null
 
 includes=$(mktemp)
-mkdir "${target}"
+mkdir -p "${target}/"
 find -H /sys -xdev '(' -type d -o -type l \
 		    -o '(' -type f \
 			-a '(' \
@@ -54,7 +82,40 @@ find -H /sys -xdev '(' -type d -o -type l \
 				-name host_sas_address -o -name sas_address -o \
 				-name port_no -o \
 				-name hid -o -name cid -o -name uid -o \
-				-name partition ')' \
+				-name namespace \
+				-name partition \
+				-name driver \
+			    ')' \
 			')' \
 		    ')' -print | sed 's,^/,,g' > "${includes}"
+find -H /sys/firmware/efi/efivars/ -xdev -type f \
+    '(' \
+	-iname '*-605dab50-e046-4300-abb6-3dd810dd8b23' \
+	-o -iname '*-d719b2cb-3d3a-4596-a3bc-dad00e67656f' \
+	-o -iname 'Audit*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'Boot*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'Con*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'Default*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'Deployed*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'Driver*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'Err*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'KEK*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'Key*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname '*Lang*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'MirrorCurrent-7b9be2e0-e28a-4197-ad3e-32f062f9462c' \
+	-o -iname 'MirrorRequest-7b9be2e0-e28a-4197-ad3e-32f062f9462c' \
+	-o -iname 'OsIndications*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'PK*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'Setup*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'SetupMode*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'SignatureSupport*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'SysPrep*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+	-o -iname 'Timeout*-8be4df61-93ca-11d2-aa0d-00e098032b8c' \
+    ')' >> "${includes}"
+find -H /proc/ -xdev -type f \
+    '(' \
+	-name partitions \
+    ')' >> "${includes}"
 rsync -W -x -d -avSHP --specials --files-from="${includes}" --include-from="${includes}" / "${target}/" 2>/dev/null
+
+# vim:filetype=sh:fenc=utf-8:sw=4:sts=4:ts=8:noet
