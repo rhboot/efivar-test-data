@@ -15,6 +15,7 @@ TESTDIRS = \
 	   virtio \
 	   virtio-and-ide-and-scsi \
 	   vm-baytrail-x64-nosb \
+	   vm-baytrail-x64-sb \
 	   windows-ubuntu-manjaro-fedora \
 	   xps13-9350 \
 	   xps13-9380
